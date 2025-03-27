@@ -1,0 +1,56 @@
+from pydantic import BaseModel, EmailStr
+from datetime import datetime
+from enum import Enum
+from typing import Optional, List
+
+class Role(str, Enum):
+    USER = "user"
+    ADMIN = "admin"
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+class TokenData(BaseModel):
+    username: Optional[str] = None
+    role: Optional[Role] = None
+    exp: Optional[datetime] = None
+
+class UserBase(BaseModel):
+    username: str
+    email: Optional[EmailStr] = None
+
+class UserCreate(UserBase):
+    password: str
+
+class UserInDB(UserBase):
+    hashed_password: str
+    role: Role = Role.USER
+    disabled: bool = False
+
+class UserOut(UserBase):
+    role: Role
+    disabled: bool
+
+class WhitelistEntry(BaseModel):
+    user_id: str
+    token: str
+    expires_at: datetime
+
+class BlacklistEntry(BaseModel):
+    token: str
+    expires_at: datetime
+
+class ContentItem(BaseModel):
+    id: str
+    title: str
+    description: Optional[str] = None
+
+class RoleSpecificContent(ContentItem):
+    allowed_roles: List[Role]
+
+class Message(BaseModel):
+    message: str
+
+class ErrorResponse(BaseModel):
+    detail: str
