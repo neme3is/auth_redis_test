@@ -1,6 +1,7 @@
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
+from jose.exceptions import JWTError
 
 from app.config import settings
 from app.database import redis_client
@@ -13,7 +14,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         detail="Could not validate credentials"
     )
 
-    if redis_client.exists(f"blacklist:{token}"):
+    if await redis_client.exists(f"blacklist:{token}"):
         raise credentials_exception
 
     try:
@@ -24,8 +25,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     except JWTError:
         raise credentials_exception
 
-    # 3. Получение пользователя из БД
-    user = get_user_from_db(username)  # Ваша функция для запроса к БД
+    user = db.get_user_from_db(username)
     if user is None:
         raise credentials_exception
 

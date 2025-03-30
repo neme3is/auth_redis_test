@@ -1,4 +1,4 @@
-import redis
+import redis.asyncio as redis
 
 from app.config import settings
 
@@ -8,3 +8,4 @@ redis_client = redis.Redis(
     password=settings.redis_settings.redis_password,
     decode_responses=True
 )
+

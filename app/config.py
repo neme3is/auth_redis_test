@@ -8,13 +8,22 @@ class RedisSettings(BaseSettings):
     redis_password: str = ''
 
 
+class PostgresSettings(BaseSettings):
+    db_user: SecretStr = 'postgres'
+    db_password: SecretStr = ''
+    db_host: str = '127.0.0.1'
+    db_port: int = 5432
+    db_name: str = 'jwt_task'
+
+
 class AuthSettings(BaseSettings):
     secret_key: SecretStr = '123'
     algorithm: str = 'HS256'
+    access_toke_expire_minutes: int = 15
 
 
 class Settings(BaseSettings):
-    redis_settings = RedisSettings()
-    auth_settings = AuthSettings()
+    redis_settings: RedisSettings = RedisSettings()
+    auth_settings: AuthSettings = AuthSettings()
 
 settings = Settings()
