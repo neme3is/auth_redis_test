@@ -4,7 +4,7 @@ from jose import jwt
 from jose.exceptions import JWTError
 
 from app.config import settings
-from app.database import redis_client
+from app.database.redis_client import RedisClient
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
@@ -14,7 +14,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         detail="Could not validate credentials"
     )
 
-    if await redis_client.exists(f"blacklist:{token}"):
+    if await RedisClient.exists(f"blacklist:{token}"):
         raise credentials_exception
 
     try:

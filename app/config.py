@@ -25,5 +25,7 @@ class AuthSettings(BaseSettings):
 class Settings(BaseSettings):
     redis_settings: RedisSettings = RedisSettings()
     auth_settings: AuthSettings = AuthSettings()
+    postgres_settings: PostgresSettings = PostgresSettings()
+
 
 settings = Settings()
