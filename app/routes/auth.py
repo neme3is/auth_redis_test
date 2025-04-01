@@ -39,7 +39,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 @router.post("/logout")
 async def logout(current_user: UserInDB = Depends(get_current_user)):
-    token = await RedisClient.get(f"whitelist:{current_user.name}")
+    token = await RedisClient.get(f"whitelist:{current_user.username}")
 
     if token is not None:
         await AuthService.add_to_blacklist(token)

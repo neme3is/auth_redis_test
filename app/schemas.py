@@ -2,7 +2,7 @@ from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional, List
 
-from app.enum.roles import Role
+from app.enums.roles import Role
 
 
 class Token(BaseModel):
