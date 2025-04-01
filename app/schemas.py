@@ -3,6 +3,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional, List
 
+
 class Role(str, Enum):
     USER = "user"
     ADMIN = "admin"

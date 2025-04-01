@@ -4,6 +4,7 @@ from app.database.redis_client import RedisClient
 from app.schemas import UserCreate
 from app.services.auth import AuthService
 
+
 router = APIRouter(tags=["create-user"])
 
 # удобное добавление пользователя в redis

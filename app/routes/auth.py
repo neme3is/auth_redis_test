@@ -5,7 +5,9 @@ from app.schemas import Token
 from app.config import settings
 from app.services.auth import AuthService
 
+
 router = APIRouter(prefix="/auth", tags=["auth"])
+
 
 @router.post("/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
