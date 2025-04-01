@@ -2,8 +2,7 @@ from fastapi import APIRouter
 
 from app.database.redis_client import RedisClient
 from app.schemas import UserCreate
-from app.services.auth import AuthService
-
+from app.services.auth_service import AuthService
 
 router = APIRouter(tags=["create-user"])
 
