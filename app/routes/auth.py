@@ -3,8 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from datetime import timedelta
 from app.schemas import Token
 from app.config import settings
-from app.services.auth import AuthService
-
+from app.services.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
