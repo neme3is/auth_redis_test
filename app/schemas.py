@@ -1,12 +1,9 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
-from enum import Enum
 from typing import Optional, List
 
+from app.enum.roles import Role
 
-class Role(str, Enum):
-    USER = "user"
-    ADMIN = "admin"
 
 class Token(BaseModel):
     access_token: str

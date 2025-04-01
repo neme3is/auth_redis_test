@@ -5,10 +5,13 @@ from jose.exceptions import JWTError
 
 from app.config import settings
 from app.database.redis_client import RedisClient
+from app.schemas import UserInDB
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+
+async def get_current_user(token: str = Depends(oauth2_scheme)) -> UserInDB:
     credentials_exception = HTTPException(
         status_code=401,
         detail="Could not validate credentials"
@@ -25,8 +28,16 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     except JWTError:
         raise credentials_exception
 
-    user = RedisClient.get(f"user:{username}")
+    user = await RedisClient.hgetall(f"user:{username}")
+
     if user is None:
         raise credentials_exception
 
-    return user
+    user_model = UserInDB(
+        username=user['username'],
+        hashed_password=user['hashed_password'],
+        email=user['email'] if user.get('email') else None,
+        role=user['role']
+    )
+
+    return user_model
