@@ -47,6 +47,17 @@ class RedisClient:
         return await redis_client.hset(key, mapping=mapping)
 
     @classmethod
+    async def hget(cls, key: str, field: str):
+        redis_client = await cls.get_instance()
+        return await redis_client.hget(key, field)
+
+    @classmethod
+    async def hgetall(cls, key: str):
+        redis_client = await cls.get_instance()
+        return await redis_client.hgetall(key)
+
+
+    @classmethod
     async def close(cls):
         if cls._instance:
             await cls._instance.close()

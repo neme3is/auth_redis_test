@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from app.config import settings
 from app.database.redis_client import RedisClient
 from app.logger import Logger
+from app.schemas import UserInDB
 
 
 class AuthService:
@@ -60,14 +61,20 @@ class AuthService:
         return False
 
     @classmethod
-    async def authenticate_user(cls, username: str, password: str) -> dict | None:
-        user = await RedisClient.get(f"user:{username}")
+    async def authenticate_user(cls, username: str, password: str) -> UserInDB | None:
+        user = await RedisClient.hgetall(f"user:{username}")
 
         if not user:
             return None
 
-        if not cls.pwd_context.verify(password, user.hashed_password):
+        user_model = UserInDB(
+            username=user['username'],
+            hashed_password=user['hashed_password'],
+            email=user['email'] if user.get('email') else None,
+            role=user['role']
+            )
+
+        if not cls.pwd_context.verify(password, user_model.hashed_password):
             return None
 
-        return user
-
+        return user_model
