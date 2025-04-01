@@ -41,6 +41,11 @@ class RedisClient:
         return await redis_client.setex(key, expires_in, token)
 
     @classmethod
+    async def hset(cls, key: str, mapping: dict):
+        redis_client = await cls.get_instance()
+        return await redis_client.hset(key, mapping=mapping)
+
+    @classmethod
     async def close(cls):
         if cls._instance:
             await cls._instance.close()
