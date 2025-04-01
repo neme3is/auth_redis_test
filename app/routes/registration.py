@@ -15,7 +15,8 @@ async def create_user(user: UserCreate):
     user_data = {
         "username": user.username,
         "email": user.email or "",
-        "password": AuthService.get_password_hash(user.password)
+        "hashed_password": AuthService.get_password_hash(user.password),
+        "role": user.role
     }
 
     await RedisClient.hset(user_key, mapping=user_data)

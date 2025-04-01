@@ -18,6 +18,7 @@ class TokenData(BaseModel):
 
 class UserBase(BaseModel):
     username: str
+    role: Role = Role.USER
     email: Optional[EmailStr] = None
 
 class UserCreate(UserBase):
@@ -25,7 +26,6 @@ class UserCreate(UserBase):
 
 class UserInDB(UserBase):
     hashed_password: str
-    role: Role = Role.USER
     disabled: bool = False
 
 class UserOut(UserBase):

@@ -61,7 +61,7 @@ class AuthService:
 
     @classmethod
     async def authenticate_user(cls, username: str, password: str) -> dict | None:
-        user = await RedisClient.get(username)
+        user = await RedisClient.get(f"user:{username}")
 
         if not user:
             return None
