@@ -3,6 +3,7 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from app.config import settings
 from app.database.redis_client import RedisClient
+from app.logger import Logger
 
 
 class AuthService:
@@ -18,6 +19,10 @@ class AuthService:
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(to_encode, settings.auth_settings.secret_key, algorithm=settings.auth_settings.algorithm)
         return encoded_jwt
+
+    @classmethod
+    def get_password_hash(cls, password: str) -> str:
+        return cls.pwd_context.hash(password)
 
     @classmethod
     async def verify_password(cls, plain_password: str, hashed_password: str):
@@ -41,7 +46,6 @@ class AuthService:
         try:
             payload = jwt.get_unverified_claims(token)
             exp = payload.get('exp')
-
             if exp:
                 expires_at = datetime.fromtimestamp(exp)
                 now = datetime.now()
@@ -50,9 +54,8 @@ class AuthService:
                     ttl = int((expires_at - now).total_seconds())
                     await RedisClient.setex(f"blacklist:{token}", ttl, "true")
                     return True
-
         except Exception as e:
-            print(f"Error adding to blacklist: {e}")
+            Logger.logger(f"Error adding to blacklist: {e}")
 
         return False
 

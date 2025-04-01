@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.database.redis_client import RedisClient
 from app.schemas import UserCreate
+from app.services.auth import AuthService
 
 router = APIRouter(tags=["create-user"])
 
@@ -14,7 +15,7 @@ async def create_user(user: UserCreate):
     user_data = {
         "username": user.username,
         "email": user.email or "",
-        "password": user.password
+        "password": AuthService.get_password_hash(user.password)
     }
 
     await RedisClient.hset(user_key, mapping=user_data)
