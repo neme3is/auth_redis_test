@@ -3,6 +3,7 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from app.config import settings
 from app.database.redis_client import RedisClient
+from app.helpers.token_helper import TokenHelper
 from app.logger import Logger
 from app.schemas import UserInDB
 
@@ -45,8 +46,7 @@ class AuthService:
     @classmethod
     async def add_to_blacklist(cls, token: str):
         try:
-            payload = jwt.get_unverified_claims(token)
-            exp = payload.get('exp')
+            exp = TokenHelper.get_token_expiration(token)
             if exp:
                 expires_at = datetime.fromtimestamp(exp)
                 now = datetime.now()
