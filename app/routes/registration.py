@@ -6,6 +6,7 @@ from app.services.auth_service import AuthService
 
 router = APIRouter(tags=["create-user"])
 
+
 # удобное добавление пользователя в redis
 @router.post("/create-user")
 async def create_user(request: Request, user: UserCreate):

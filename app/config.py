@@ -3,26 +3,26 @@ from pydantic import SecretStr
 from pydantic_settings import BaseSettings
 
 
-load_dotenv(dotenv_path='../.env')
+load_dotenv(dotenv_path="../.env")
 
 
 class RedisSettings(BaseSettings):
-    redis_host: str = '127.0.0.1'
+    redis_host: str = "127.0.0.1"
     redis_port: int = 6379
-    redis_password: str = ''
+    redis_password: str = ""
 
 
 class PostgresSettings(BaseSettings):
-    db_user: SecretStr = 'postgres'
-    db_password: SecretStr = ''
-    db_host: str = '127.0.0.1'
+    db_user: SecretStr = "postgres"
+    db_password: SecretStr = ""
+    db_host: str = "127.0.0.1"
     db_port: int = 5432
-    db_name: str = 'jwt_task'
+    db_name: str = "jwt_task"
 
 
 class AuthSettings(BaseSettings):
-    secret_key: str = '12345ABC'
-    algorithm: str = 'HS256'
+    secret_key: str = "12345ABC"
+    algorithm: str = "HS256"
     access_toke_expire_minutes: int = 15
 
 

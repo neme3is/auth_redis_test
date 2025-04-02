@@ -19,7 +19,11 @@ class AuthService:
         else:
             expire = datetime.now() + timedelta(minutes=15)
         to_encode.update({"exp": expire})
-        encoded_jwt = jwt.encode(to_encode, settings.auth_settings.secret_key, algorithm=settings.auth_settings.algorithm)
+        encoded_jwt = jwt.encode(
+            to_encode,
+            settings.auth_settings.secret_key,
+            algorithm=settings.auth_settings.algorithm,
+        )
         return encoded_jwt
 
     @classmethod
@@ -61,19 +65,21 @@ class AuthService:
         return False
 
     @classmethod
-    async def authenticate_user(cls, username: str, password: str, client_ip: str) -> UserInDB | None:
+    async def authenticate_user(
+        cls, username: str, password: str, client_ip: str
+    ) -> UserInDB | None:
         user = await RedisClient.hgetall(f"user:{username}")
 
         if not user:
             return None
 
         user_model = UserInDB(
-            username=user['username'],
-            hashed_password=user['hashed_password'],
-            email=user['email'] if user.get('email') else None,
-            role=user['role'],
-            client_ip=client_ip
-            )
+            username=user["username"],
+            hashed_password=user["hashed_password"],
+            email=user["email"] if user.get("email") else None,
+            role=user["role"],
+            client_ip=client_ip,
+        )
 
         if not cls.verify_password(password, user_model.hashed_password):
             return None

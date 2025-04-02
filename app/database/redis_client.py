@@ -12,7 +12,7 @@ class RedisClient:
                 host=settings.redis_settings.redis_host,
                 port=settings.redis_settings.redis_port,
                 password=settings.redis_settings.redis_password,
-                decode_responses=True
+                decode_responses=True,
             )
         return cls._instance
 
@@ -55,7 +55,6 @@ class RedisClient:
     async def hgetall(cls, key: str):
         redis_client = await cls.get_instance()
         return await redis_client.hgetall(key)
-
 
     @classmethod
     async def close(cls):

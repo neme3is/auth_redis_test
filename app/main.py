@@ -13,13 +13,13 @@ from app.routes.protected_sources import router as protected_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Logger.get_logger()
-    Logger.logger.info('Logger initialized')
-    #SqlSessionManager.init_session()
-    #Logger.logger.info("✅ Database initialized")
+    Logger.logger.info("Logger initialized")
+    # SqlSessionManager.init_session()
+    # Logger.logger.info("✅ Database initialized")
 
     yield
 
-    #await SqlSessionManager.close()
+    # await SqlSessionManager.close()
     Logger.logger.info("❌ Database connection closed")
 
 

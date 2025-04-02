@@ -14,10 +14,11 @@ class Dependencies:
     oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
     @classmethod
-    async def get_current_user(cls, request: Request, token: str = Depends(oauth2_scheme)) -> UserInDB:
+    async def get_current_user(
+        cls, request: Request, token: str = Depends(oauth2_scheme)
+    ) -> UserInDB:
         credentials_exception = HTTPException(
-            status_code=401,
-            detail="Could not validate credentials"
+            status_code=401, detail="Could not validate credentials"
         )
 
         if await RedisClient.exists(f"blacklist:{token}") == 1:
@@ -25,7 +26,11 @@ class Dependencies:
             raise credentials_exception
 
         try:
-            payload = jwt.decode(token, settings.auth_settings.secret_key, algorithms=[settings.auth_settings.algorithm])
+            payload = jwt.decode(
+                token,
+                settings.auth_settings.secret_key,
+                algorithms=[settings.auth_settings.algorithm],
+            )
             username: str = payload.get("sub")
             if username is None:
                 raise credentials_exception
@@ -41,15 +46,17 @@ class Dependencies:
             raise credentials_exception
 
         user_model = UserInDB(
-            username=user['username'],
-            hashed_password=user['hashed_password'],
-            email=user['email'] if user.get('email') else None,
-            role=user['role'],
-            client_ip=user['ip'],
+            username=user["username"],
+            hashed_password=user["hashed_password"],
+            email=user["email"] if user.get("email") else None,
+            role=user["role"],
+            client_ip=user["ip"],
         )
 
         if user_model.client_ip != request.client.host:
-            Logger.logger.debug(f"Invalid ip address for {username} with token {token}!")
+            Logger.logger.debug(
+                f"Invalid ip address for {username} with token {token}!"
+            )
             raise credentials_exception
 
         return user_model
