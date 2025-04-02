@@ -7,6 +7,7 @@ from app.database.postgres_factory import SqlSessionManager
 from app.logger import Logger
 from app.routes.auth import router as auth_router
 from app.routes.registration import router as registration_router
+from app.routes.protected_sources import router as protected_router
 
 
 @asynccontextmanager
@@ -25,6 +26,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.include_router(registration_router)
 app.include_router(auth_router)
+app.include_router(protected_router)
 
 
 if __name__ == "__main__":

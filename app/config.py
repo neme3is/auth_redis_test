@@ -21,7 +21,7 @@ class PostgresSettings(BaseSettings):
 
 
 class AuthSettings(BaseSettings):
-    secret_key: SecretStr = '123'
+    secret_key: str = '12345ABC'
     algorithm: str = 'HS256'
     access_toke_expire_minutes: int = 15
 
