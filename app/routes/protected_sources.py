@@ -10,7 +10,7 @@ router = APIRouter(prefix="/protected", tags=["protected"])
 
 
 # RBAC model
-@router.get("/admin-only", response_model=Message)
+@router.get("/admin-only", response_model=Message, summary="Доступ к ресурсам администраторов")
 async def admin_only_protected_source(
     request: Request, current_user: UserInDB = Depends(Dependencies.get_current_user)
 ):
@@ -23,7 +23,7 @@ async def admin_only_protected_source(
 
 
 # all users (and admin)
-@router.get("/users", response_model=Message)
+@router.get("/users", response_model=Message, summary="Доступ к ресурсам пользователей")
 async def admin_only_protected_source(
     request: Request, current_user: UserInDB = Depends(Dependencies.get_current_user)
 ):
@@ -35,7 +35,7 @@ async def admin_only_protected_source(
     return Message(success=True, msg="Got access to user source")
 
 
-@router.get("/role-based", response_model=Message)
+@router.get("/role-based", response_model=Message, summary="Проверка роли на уровне API")
 async def admin_only_protected_source(
     request: Request, current_user: UserInDB = Depends(Dependencies.get_current_user)
 ):
