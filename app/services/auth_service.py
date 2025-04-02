@@ -61,7 +61,7 @@ class AuthService:
         return False
 
     @classmethod
-    async def authenticate_user(cls, username: str, password: str) -> UserInDB | None:
+    async def authenticate_user(cls, username: str, password: str, client_ip: str) -> UserInDB | None:
         user = await RedisClient.hgetall(f"user:{username}")
 
         if not user:
@@ -71,10 +71,11 @@ class AuthService:
             username=user['username'],
             hashed_password=user['hashed_password'],
             email=user['email'] if user.get('email') else None,
-            role=user['role']
+            role=user['role'],
+            client_ip=client_ip
             )
 
-        if not cls.pwd_context.verify(password, user_model.hashed_password):
+        if not cls.verify_password(password, user_model.hashed_password):
             return None
 
         return user_model

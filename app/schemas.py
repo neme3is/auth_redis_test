@@ -25,6 +25,7 @@ class UserCreate(UserBase):
 class UserInDB(UserBase):
     hashed_password: str
     disabled: bool = False
+    client_ip: str
 
 class UserOut(UserBase):
     role: Role

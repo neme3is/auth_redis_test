@@ -1,14 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.dependencies import get_current_user
+from app.dependencies import Dependencies
 from app.schemas import UserInDB
 from app.enums.roles import Role
+from fastapi import Request
+
 
 router = APIRouter(prefix="/protected", tags=["protected"])
 
 
-@router.post("/admin-only")
-async def admin_only_protected_source(current_user: UserInDB = Depends(get_current_user)):
+@router.get("/admin-only")
+async def admin_only_protected_source(request: Request, current_user: UserInDB = Depends(Dependencies.get_current_user)):
     if current_user.role != Role.ADMIN.value:
         raise HTTPException(
         status_code=403,
@@ -17,8 +19,9 @@ async def admin_only_protected_source(current_user: UserInDB = Depends(get_curre
 
     return {"success": True, "msg": "Got access to admin source"}
 
-@router.post("/users")
-async def admin_only_protected_source(current_user: UserInDB = Depends(get_current_user)):
+# all users (and admin)
+@router.get("/users")
+async def admin_only_protected_source(request: Request, current_user: UserInDB = Depends(Dependencies.get_current_user)):
     if current_user.role not in Role.list():
         raise HTTPException(
         status_code=403,
