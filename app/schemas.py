@@ -29,7 +29,3 @@ class UserInDB(UserBase):
 class Message(BaseModel):
     success: bool
     msg: str
-
-
-class ErrorResponse(BaseModel):
-    detail: str
