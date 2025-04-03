@@ -8,7 +8,7 @@ from app.database.redis_client import RedisClient
 from app.enums.token_type import TokenType
 from app.helpers.token_helper import TokenHelper
 from app.logger import Logger
-from app.schemas.schemas import UserInDB
+from models.models import UserInDbModel
 
 
 class AuthService:
@@ -43,19 +43,26 @@ class AuthService:
         return cls.pwd_context.verify(plain_password, hashed_password)
 
     @classmethod
-    async def add_token_to_whitelist(cls, token_type: TokenType, token: str, user_id: str, expires_in_minutes: int):
+    async def add_token_to_whitelist(
+        cls, token_type: TokenType, token: str, user_id: str, expires_in_minutes: int
+    ):
         await RedisClient.setex(
             f"whitelist:{token_type}:{user_id}",
-            int(timedelta(minutes=expires_in_minutes).total_seconds()), token
+            int(timedelta(minutes=expires_in_minutes).total_seconds()),
+            token,
         )
 
     @classmethod
-    async def is_token_whitelisted(cls, username: str, token_type: TokenType, token: str) -> bool:
+    async def is_token_whitelisted(
+        cls, username: str, token_type: TokenType, token: str
+    ) -> bool:
         stored_token = await RedisClient.get(f"whitelist:{token_type}:{username}")
         return stored_token == token
 
     @classmethod
-    async def is_token_blacklisted(cls, username: str, token_type: TokenType, token: str) -> bool:
+    async def is_token_blacklisted(
+        cls, username: str, token_type: TokenType, token: str
+    ) -> bool:
         stored_token = await RedisClient.get(f"blacklist:{token_type}:{username}")
         return stored_token == token
 
@@ -72,7 +79,9 @@ class AuthService:
                 now = datetime.now()
                 if expires_at > now:
                     ttl = int((expires_at - now).total_seconds())
-                    await RedisClient.setex(f"blacklist:{token_type}:{username}", ttl, token)
+                    await RedisClient.setex(
+                        f"blacklist:{token_type}:{username}", ttl, token
+                    )
         except Exception as e:
             Logger.logger.debug(f"Error adding to blacklist", exc_info=e)
 
@@ -87,13 +96,13 @@ class AuthService:
     @classmethod
     async def authenticate_user(
         cls, username: str, password: str, client_ip: str
-    ) -> UserInDB | None:
+    ) -> UserInDbModel | None:
         user = await RedisClient.hgetall(f"user:{username}")
 
         if not user:
             return None
 
-        user_model = UserInDB(
+        user_model = UserInDbModel(
             username=user["username"],
             hashed_password=user["hashed_password"],
             email=user["email"] if user.get("email") else None,

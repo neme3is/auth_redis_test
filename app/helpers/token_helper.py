@@ -1,5 +1,5 @@
 from fastapi import HTTPException
-from jose import jwt, JWTError
+from jose import JWTError, jwt
 from starlette import status
 
 from app.config import settings

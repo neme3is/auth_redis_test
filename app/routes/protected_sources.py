@@ -2,42 +2,54 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.dependencies import Dependencies
 from app.enums.roles import Role
-from app.schemas.schemas import Message, UserInDB
+from app.schemas.schemas import MessageDto
+from models.models import UserInDbModel
 
 router = APIRouter(prefix="/protected", tags=["protected"])
 
 
 # RBAC model
-@router.get("/admin-only", response_model=Message, summary="Доступ к ресурсам администраторов")
+@router.get(
+    "/admin-only",
+    response_model=MessageDto,
+    summary="Доступ к ресурсам администраторов",
+)
 async def admin_only_protected_source(
-    request: Request, current_user: UserInDB = Depends(Dependencies.get_current_user)
+    request: Request,
+    current_user: UserInDbModel = Depends(Dependencies.get_current_user),
 ):
     if current_user.role != Role.ADMIN.value:
         raise HTTPException(
             status_code=403, detail="Not enough rights to access admin source"
         )
 
-    return Message(success=True, msg="Got access to admin source")
+    return MessageDto(success=True, msg="Got access to admin source")
 
 
 # all users (and admin)
-@router.get("/users", response_model=Message, summary="Доступ к ресурсам пользователей")
+@router.get(
+    "/users", response_model=MessageDto, summary="Доступ к ресурсам пользователей"
+)
 async def admin_only_protected_source(
-    request: Request, current_user: UserInDB = Depends(Dependencies.get_current_user)
+    request: Request,
+    current_user: UserInDbModel = Depends(Dependencies.get_current_user),
 ):
     if current_user.role not in Role.list():
         raise HTTPException(
             status_code=403, detail="Not enough rights to access user source"
         )
 
-    return Message(success=True, msg="Got access to user source")
+    return MessageDto(success=True, msg="Got access to user source")
 
 
-@router.get("/role-based", response_model=Message, summary="Проверка роли на уровне API")
+@router.get(
+    "/role-based", response_model=MessageDto, summary="Проверка роли на уровне API"
+)
 async def admin_only_protected_source(
-    request: Request, current_user: UserInDB = Depends(Dependencies.get_current_user)
+    request: Request,
+    current_user: UserInDbModel = Depends(Dependencies.get_current_user),
 ):
     if current_user.role in Role.list():
-        return Message(success=True, msg=f"Your role is: {current_user.role}")
+        return MessageDto(success=True, msg=f"Your role is: {current_user.role}")
     else:
-        return Message(success=True, msg="Your role is: undefined")
+        return MessageDto(success=True, msg="Your role is: undefined")

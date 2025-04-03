@@ -7,8 +7,8 @@ from app.config import settings
 from app.database.redis_client import RedisClient
 from app.enums.token_type import TokenType
 from app.logger import Logger
-from app.schemas.schemas import UserInDB
 from app.services.auth_service import AuthService
+from models.models import UserInDbModel
 
 
 class Dependencies:
@@ -17,7 +17,7 @@ class Dependencies:
     @classmethod
     async def get_current_user(
         cls, request: Request, token: str = Depends(oauth2_scheme)
-    ) -> UserInDB:
+    ) -> UserInDbModel:
         credentials_exception = HTTPException(
             status_code=401, detail="Could not validate credentials"
         )
@@ -34,11 +34,17 @@ class Dependencies:
                 Logger.logger.debug(f"Username is None.")
                 raise credentials_exception
 
-            if await AuthService.is_token_blacklisted(username, TokenType.access, token):
+            if await AuthService.is_token_blacklisted(
+                username, TokenType.access, token
+            ):
                 Logger.logger.debug(f"Token: {token} is blacklisted!")
                 raise credentials_exception
-            if not await AuthService.is_token_whitelisted(username, TokenType.access, token):
-                Logger.logger.debug(f"User {username} with token {token} in whitelist not found!")
+            if not await AuthService.is_token_whitelisted(
+                username, TokenType.access, token
+            ):
+                Logger.logger.debug(
+                    f"User {username} with token {token} in whitelist not found!"
+                )
                 raise credentials_exception
 
         except JWTError as e:
@@ -56,11 +62,17 @@ class Dependencies:
                     Logger.logger.debug(f"Username is None.")
                     raise credentials_exception
 
-                if await AuthService.is_token_blacklisted(username, TokenType.refresh, token):
+                if await AuthService.is_token_blacklisted(
+                    username, TokenType.refresh, token
+                ):
                     Logger.logger.debug(f"Token: {token} is blacklisted!")
                     raise credentials_exception
-                if not await AuthService.is_token_whitelisted(username, TokenType.refresh, token):
-                    Logger.logger.debug(f"User {username} with token {token} in whitelist not found!")
+                if not await AuthService.is_token_whitelisted(
+                    username, TokenType.refresh, token
+                ):
+                    Logger.logger.debug(
+                        f"User {username} with token {token} in whitelist not found!"
+                    )
                     raise credentials_exception
 
             except JWTError as e:
@@ -72,7 +84,7 @@ class Dependencies:
         if user is None:
             raise credentials_exception
 
-        user_model = UserInDB(
+        user_model = UserInDbModel(
             username=user["username"],
             hashed_password=user["hashed_password"],
             email=user["email"] if user.get("email") else None,

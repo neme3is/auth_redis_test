@@ -2,8 +2,8 @@ from enum import StrEnum
 
 
 class TokenType(StrEnum):
-    access = 'access'
-    refresh = 'refresh'
+    access = "access"
+    refresh = "refresh"
 
     @classmethod
     def list(cls):
