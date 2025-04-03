@@ -5,7 +5,7 @@ from app.config import settings
 from app.database.redis_client import RedisClient
 from app.helpers.token_helper import TokenHelper
 from app.logger import Logger
-from app.schemas import UserInDB
+from app.schemas.schemas import UserInDB
 
 
 class AuthService:

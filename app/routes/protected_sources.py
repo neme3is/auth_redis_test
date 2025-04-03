@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.dependencies import Dependencies
-from app.schemas import UserInDB, Message
 from app.enums.roles import Role
 from fastapi import Request
 
+from app.schemas.schemas import Message, UserInDB
 
 router = APIRouter(prefix="/protected", tags=["protected"])
 

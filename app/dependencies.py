@@ -6,7 +6,7 @@ from jose.exceptions import JWTError
 from app.config import settings
 from app.database.redis_client import RedisClient
 from app.logger import Logger
-from app.schemas import UserInDB
+from app.schemas.schemas import UserInDB
 from app.services.auth_service import AuthService
 
 

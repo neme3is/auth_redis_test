@@ -6,8 +6,8 @@ from fastapi import Request
 
 from app.database.redis_client import RedisClient
 from app.dependencies import Dependencies
-from app.schemas import Token, UserInDB
 from app.config import settings
+from app.schemas.schemas import Token, UserInDB
 from app.services.auth_service import AuthService
 
 
