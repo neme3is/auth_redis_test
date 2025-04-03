@@ -5,6 +5,7 @@ from jose.exceptions import JWTError
 
 from app.config import settings
 from app.database.redis_client import RedisClient
+from app.enums.token_type import TokenType
 from app.logger import Logger
 from app.schemas.schemas import UserInDB
 from app.services.auth_service import AuthService
@@ -21,10 +22,6 @@ class Dependencies:
             status_code=401, detail="Could not validate credentials"
         )
 
-        if await RedisClient.exists(f"blacklist:{token}") == 1:
-            Logger.logger.debug(f"Token: {token} is blacklisted!")
-            raise credentials_exception
-
         try:
             payload = jwt.decode(
                 token,
@@ -33,9 +30,13 @@ class Dependencies:
             )
             username: str = payload.get("sub")
             if username is None:
+                Logger.logger.debug(f"Username is None.")
                 raise credentials_exception
-            if not await AuthService.is_token_whitelisted(username, token):
-                Logger.logger.debug(f"User {username} with token {token} found!")
+            if await AuthService.is_token_blacklisted(username, TokenType.access, token):
+                Logger.logger.debug(f"Token: {token} is blacklisted!")
+                raise credentials_exception
+            if not await AuthService.is_token_whitelisted(username, TokenType.access, token):
+                Logger.logger.debug(f"User {username} with token {token} in whitelist not found!")
                 raise credentials_exception
         except JWTError:
             raise credentials_exception

@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Header
 from fastapi.security import OAuth2PasswordRequestForm
-from datetime import timedelta, datetime
 
 from fastapi import Request
 
@@ -30,20 +29,28 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
 
     access_token, access_token_expires = await AuthService.create_token(
         data={"sub": user.username, "role": user.role.value, "ip": client_ip},
-        token_type=TokenType.access_token,
+        token_type=TokenType.access,
     )
 
     refresh_token, refresh_token_expires = await AuthService.create_token(
         data={"sub": user.username, "role": user.role.value, "ip": client_ip},
-        token_type=TokenType.refresh_token,
+        token_type=TokenType.refresh,
     )
 
-    await AuthService.add_to_whitelist(
+    await AuthService.add_token_to_whitelist(
+        token_type=TokenType.access,
         token=access_token,
         user_id=user.username,
-        expires_in=int(timedelta(minutes=access_token_expires).total_seconds(),
+        expires_in_minutes=access_token_expires
     )
-)
+
+    await AuthService.add_token_to_whitelist(
+        token_type=TokenType.refresh,
+        token=refresh_token,
+        user_id=user.username,
+        expires_in_minutes=refresh_token_expires
+    )
+
     return Token(access_token=access_token, refresh_token=refresh_token)
 
 
@@ -51,31 +58,39 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
 async def logout(
     request: Request, current_user: UserInDB = Depends(Dependencies.get_current_user)
 ):
-    token = await RedisClient.get(f"whitelist:{current_user.username}")
 
-    if token is not None:
-        await AuthService.add_to_blacklist(token)
+    await AuthService.invalidate_old_tokens(current_user.username)
+
     return Message(success=True, msg=f"Successfully logged out")
 
 
-router.post("/refresh", response_model=Token)
-async def refresh_token(refresh_token: str = Header(..., alias="Authorization")):
-    user_data = await AuthService.validate_refresh_token(refresh_token)
-    if not user_data:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired refresh token",
-        )
+@router.post("/refresh", response_model=Token)
+async def refresh_token(refresh_token: str = Header(..., alias="Authorization"),
+                        current_user: UserInDB = Depends(Dependencies.get_current_user)
+                        ):
 
-    new_access_token = await AuthService.create_access_token(
-        data={"sub": user_data["sub"], "role": user_data.get("role")},
-        expires_delta=timedelta(minutes=settings.auth_settings.access_token_expire_minutes),
+    await AuthService.invalidate_old_tokens(current_user.username)
+
+    new_access_token = await AuthService.create_token(
+        data={"sub": current_user.username, "role": current_user.role}, token_type=TokenType.access
     )
 
-    await AuthService.add_to_whitelist(
-        old_refresh_token=refresh_token,
-        new_access_token=new_access_token,
-        user_id=user_data["sub"],
+    await AuthService.add_token_to_whitelist(
+        TokenType.access,
+        new_access_token,
+        current_user.username,
+        settings.auth_settings.access_token_expire_minutes
+    )
+
+    new_refresh_token = await AuthService.create_token(
+        data={"sub": current_user.username, "role": current_user.role}, token_type=TokenType.refresh
+    )
+
+    await AuthService.add_token_to_whitelist(
+        TokenType.refresh,
+        new_refresh_token,
+        current_user.username,
+        settings.auth_settings.refresh_token_expire_minutes
     )
 
     return Token(

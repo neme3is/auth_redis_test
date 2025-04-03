@@ -1,3 +1,5 @@
+from sys import exc_info
+
 from jose import jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
@@ -15,9 +17,9 @@ class AuthService:
     @classmethod
     async def create_token(cls, data: dict, token_type: TokenType):
         to_encode = data.copy()
-        if token_type == TokenType.access_token:
+        if token_type == TokenType.access:
             time_delta = settings.auth_settings.access_token_expire_minutes
-        if token_type == TokenType.refresh_token:
+        if token_type == TokenType.refresh:
             time_delta = settings.auth_settings.refresh_token_expire_minutes
         expire = datetime.now() + timedelta(minutes=time_delta)
         to_encode.update({"exp": expire})
@@ -37,34 +39,46 @@ class AuthService:
         return cls.pwd_context.verify(plain_password, hashed_password)
 
     @classmethod
-    async def add_to_whitelist(cls, token: str, user_id: str, expires_in: int):
-        await RedisClient.setex(f"whitelist:{user_id}", expires_in, token)
+    async def add_token_to_whitelist(cls, token_type: TokenType, token: str, user_id: str, expires_in_minutes: int):
+        await RedisClient.setex(
+            f"whitelist:{token_type}:{user_id}",
+            int(timedelta(minutes=expires_in_minutes).total_seconds()), token
+        )
 
     @classmethod
-    async def is_token_whitelisted(cls, user_id: str, token: str) -> bool:
-        stored_token = await RedisClient.get(f"whitelist:{user_id}")
+    async def is_token_whitelisted(cls, username: str, token_type: TokenType, token: str) -> bool:
+        stored_token = await RedisClient.get(f"whitelist:{token_type}:{username}")
         return stored_token == token
 
     @classmethod
-    async def remove_from_whitelist(cls, user_id: str):
-        await RedisClient.delete(f"whitelist:{user_id}")
+    async def is_token_blacklisted(cls, username: str, token_type: TokenType, token: str) -> bool:
+        stored_token = await RedisClient.get(f"blacklist:{token_type}:{username}")
+        return stored_token == token
 
     @classmethod
-    async def add_to_blacklist(cls, token: str):
+    async def remove_from_whitelist(cls, username: str, token_type: TokenType):
+        await RedisClient.delete(f"whitelist:{token_type}:{username}")
+
+    @classmethod
+    async def add_to_blacklist(cls, token_type: TokenType, token: str, username: str):
         try:
             exp = TokenHelper.get_token_expiration(token)
             if exp:
                 expires_at = datetime.fromtimestamp(exp)
                 now = datetime.now()
-
                 if expires_at > now:
                     ttl = int((expires_at - now).total_seconds())
-                    await RedisClient.setex(f"blacklist:{token}", ttl, "true")
-                    return True
+                    await RedisClient.setex(f"blacklist:{token_type}:{username}", ttl, token)
         except Exception as e:
-            Logger.logger(f"Error adding to blacklist: {e}")
+            Logger.logger(f"Error adding to blacklist", exc_info=e)
 
-        return False
+    @classmethod
+    async def invalidate_old_tokens(cls, username: str):
+        for token_type in TokenType.list():
+            token = await RedisClient.get(f"whitelist:{token_type}:{username}")
+            if token:
+                await AuthService.add_to_blacklist(token_type, token, username)
+                await AuthService.remove_from_whitelist(username, token_type)
 
     @classmethod
     async def authenticate_user(
