@@ -15,10 +15,6 @@ class UserBase(BaseModel):
     email: Optional[EmailStr] = None
 
 
-class UserCreate(UserBase):
-    password: str
-
-
 class UserInDB(UserBase):
     hashed_password: str
     disabled: bool = False
@@ -28,6 +24,11 @@ class UserInDB(UserBase):
 class Message(BaseModel):
     success: bool
     msg: str
+
+
+class CreateUserMessage(BaseModel):
+    success: bool
+    username: str
 
 
 class ErrorResponse(BaseModel):
