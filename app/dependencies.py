@@ -28,18 +28,44 @@ class Dependencies:
                 settings.auth_settings.access_token_secret_key,
                 algorithms=[settings.auth_settings.algorithm],
             )
+
             username: str = payload.get("sub")
             if username is None:
                 Logger.logger.debug(f"Username is None.")
                 raise credentials_exception
+
             if await AuthService.is_token_blacklisted(username, TokenType.access, token):
                 Logger.logger.debug(f"Token: {token} is blacklisted!")
                 raise credentials_exception
             if not await AuthService.is_token_whitelisted(username, TokenType.access, token):
                 Logger.logger.debug(f"User {username} with token {token} in whitelist not found!")
                 raise credentials_exception
-        except JWTError:
-            raise credentials_exception
+
+        except JWTError as e:
+            Logger.logger.debug(f"Error with access token: {str(e)}")
+
+            try:
+                payload = jwt.decode(
+                    token,
+                    settings.auth_settings.refresh_token_secret_key,
+                    algorithms=[settings.auth_settings.algorithm],
+                )
+
+                username: str = payload.get("sub")
+                if username is None:
+                    Logger.logger.debug(f"Username is None.")
+                    raise credentials_exception
+
+                if await AuthService.is_token_blacklisted(username, TokenType.refresh, token):
+                    Logger.logger.debug(f"Token: {token} is blacklisted!")
+                    raise credentials_exception
+                if not await AuthService.is_token_whitelisted(username, TokenType.refresh, token):
+                    Logger.logger.debug(f"User {username} with token {token} in whitelist not found!")
+                    raise credentials_exception
+
+            except JWTError as e:
+                Logger.logger.debug(f"Error with refresh token: {str(e)}")
+                raise credentials_exception
 
         user = await RedisClient.hgetall(f"user:{username}")
 

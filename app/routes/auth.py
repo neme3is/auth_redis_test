@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.config import settings
-from app.database.redis_client import RedisClient
 from app.dependencies import Dependencies
 from app.enums.token_type import TokenType
 from app.schemas.schemas import Message, Token, UserInDB
@@ -65,7 +64,7 @@ async def logout(
 async def refresh_token(refresh_token: str = Header(..., alias="Authorization"),
                         current_user: UserInDB = Depends(Dependencies.get_current_user)
                         ):
-    print('aaaa')
+
     await AuthService.invalidate_old_tokens(current_user.username)
 
     new_access_token, new_access_token_expiration_time = await AuthService.create_token(
