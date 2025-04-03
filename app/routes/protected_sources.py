@@ -39,9 +39,7 @@ async def admin_only_protected_source(
 async def admin_only_protected_source(
     request: Request, current_user: UserInDB = Depends(Dependencies.get_current_user)
 ):
-    if current_user.role == Role.ADMIN.value:
-        return Message(success=True, msg=f"Your role is: {Role.ADMIN.value}")
-    if current_user.role == Role.USER.value:
-        return Message(success=True, msg=f"Your role is: {Role.USER.value}")
+    if current_user.role in (Role.ADMIN.value, Role.USER.value):
+        return Message(success=True, msg=f"Your role is: {current_user.role}")
     else:
-        return Message(success=True, msg=f"Your role is: undefined")
+        return Message(success=True, msg="Your role is: undefined")
