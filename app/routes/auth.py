@@ -28,7 +28,7 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
         )
 
     access_token_expires = timedelta(
-        minutes=settings.auth_settings.access_toke_expire_minutes
+        minutes=settings.auth_settings.access_token_expire_minutes
     )
     access_token = await AuthService.create_access_token(
         data={"sub": user.username, "role": user.role.value, "ip": client_ip},
