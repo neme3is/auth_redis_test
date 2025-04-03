@@ -7,6 +7,7 @@ from app.enums.roles import Role
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    refresh_token: str
 
 
 class UserBase(BaseModel):
@@ -33,3 +34,9 @@ class CreateUserMessage(BaseModel):
 
 class ErrorResponse(BaseModel):
     detail: str
+
+class CreateUserDto(BaseModel):
+    username: str
+    password: str
+    role: str
+    email: str = None

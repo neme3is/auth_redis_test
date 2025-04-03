@@ -28,7 +28,7 @@ class Dependencies:
         try:
             payload = jwt.decode(
                 token,
-                settings.auth_settings.secret_key,
+                settings.auth_settings.access_token_secret_key,
                 algorithms=[settings.auth_settings.algorithm],
             )
             username: str = payload.get("sub")

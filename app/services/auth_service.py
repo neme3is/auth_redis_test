@@ -3,6 +3,7 @@ from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from app.config import settings
 from app.database.redis_client import RedisClient
+from app.enums.token_type import TokenType
 from app.helpers.token_helper import TokenHelper
 from app.logger import Logger
 from app.schemas.schemas import UserInDB
@@ -12,19 +13,20 @@ class AuthService:
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     @classmethod
-    async def create_access_token(cls, data: dict, expires_delta: timedelta = None):
+    async def create_token(cls, data: dict, token_type: TokenType):
         to_encode = data.copy()
-        if expires_delta:
-            expire = datetime.now() + expires_delta
-        else:
-            expire = datetime.now() + timedelta(minutes=settings.auth_settings.access_token_expire_minutes)
+        if token_type == TokenType.access_token:
+            time_delta = settings.auth_settings.access_token_expire_minutes
+        if token_type == TokenType.refresh_token:
+            time_delta = settings.auth_settings.refresh_token_expire_minutes
+        expire = datetime.now() + timedelta(minutes=time_delta)
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(
             to_encode,
-            settings.auth_settings.secret_key,
+            settings.auth_settings.access_token_secret_key,
             algorithm=settings.auth_settings.algorithm,
         )
-        return encoded_jwt
+        return encoded_jwt, time_delta
 
     @classmethod
     def get_password_hash(cls, password: str) -> str:
