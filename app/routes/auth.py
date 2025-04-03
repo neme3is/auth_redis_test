@@ -6,8 +6,8 @@ from fastapi import Request
 
 from app.database.redis_client import RedisClient
 from app.dependencies import Dependencies
-from app.schemas import Token, UserInDB
 from app.config import settings
+from app.schemas.schemas import Token, UserInDB, Message
 from app.services.auth_service import AuthService
 
 
@@ -28,7 +28,7 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
         )
 
     access_token_expires = timedelta(
-        minutes=settings.auth_settings.access_toke_expire_minutes
+        minutes=settings.auth_settings.access_token_expire_minutes
     )
     access_token = await AuthService.create_access_token(
         data={"sub": user.username, "role": user.role.value, "ip": client_ip},
@@ -41,10 +41,10 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
         expires_in=int(access_token_expires.total_seconds()),
     )
 
-    return {"access_token": access_token, "token_type": "bearer"}
+    return Token(access_token=access_token)
 
 
-@router.post("/logout")
+@router.post("/logout", response_model=Message)
 async def logout(
     request: Request, current_user: UserInDB = Depends(Dependencies.get_current_user)
 ):
@@ -52,5 +52,4 @@ async def logout(
 
     if token is not None:
         await AuthService.add_to_blacklist(token)
-
-    return {"message": "Successfully logged out"}
+    return Message(success=True, msg=f"Successfully logged out")

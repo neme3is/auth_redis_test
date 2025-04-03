@@ -5,7 +5,7 @@ from app.config import settings
 from app.database.redis_client import RedisClient
 from app.helpers.token_helper import TokenHelper
 from app.logger import Logger
-from app.schemas import UserInDB
+from app.schemas.schemas import UserInDB
 
 
 class AuthService:
@@ -17,7 +17,7 @@ class AuthService:
         if expires_delta:
             expire = datetime.now() + expires_delta
         else:
-            expire = datetime.now() + timedelta(minutes=15)
+            expire = datetime.now() + timedelta(minutes=settings.auth_settings.access_token_expire_minutes)
         to_encode.update({"exp": expire})
         encoded_jwt = jwt.encode(
             to_encode,
