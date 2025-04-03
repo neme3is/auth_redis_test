@@ -6,8 +6,8 @@ from fastapi import FastAPI
 from app.database.postgres_factory import SqlSessionManager
 from app.logger import Logger
 from app.routes.auth import router as auth_router
-from app.routes.registration import router as registration_router
 from app.routes.protected_sources import router as protected_router
+from app.routes.registration import router as registration_router
 
 
 @asynccontextmanager

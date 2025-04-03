@@ -1,15 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 
-from fastapi import Request
-
+from app.config import settings
 from app.database.redis_client import RedisClient
 from app.dependencies import Dependencies
-from app.config import settings
 from app.enums.token_type import TokenType
-from app.schemas.schemas import Token, UserInDB, Message
+from app.schemas.schemas import Message, Token, UserInDB
 from app.services.auth_service import AuthService
-
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -68,10 +65,10 @@ async def logout(
 async def refresh_token(refresh_token: str = Header(..., alias="Authorization"),
                         current_user: UserInDB = Depends(Dependencies.get_current_user)
                         ):
-
+    print('aaaa')
     await AuthService.invalidate_old_tokens(current_user.username)
 
-    new_access_token = await AuthService.create_token(
+    new_access_token, new_access_token_expiration_time = await AuthService.create_token(
         data={"sub": current_user.username, "role": current_user.role}, token_type=TokenType.access
     )
 
@@ -82,18 +79,22 @@ async def refresh_token(refresh_token: str = Header(..., alias="Authorization"),
         settings.auth_settings.access_token_expire_minutes
     )
 
-    new_refresh_token = await AuthService.create_token(
+    new_refresh_token, new_refresh_token_expiration_time = await AuthService.create_token(
         data={"sub": current_user.username, "role": current_user.role}, token_type=TokenType.refresh
     )
 
     await AuthService.add_token_to_whitelist(
-        TokenType.refresh,
-        new_refresh_token,
-        current_user.username,
-        settings.auth_settings.refresh_token_expire_minutes
+        token_type=TokenType.access,
+        token=new_access_token,
+        user_id=current_user.username,
+        expires_in_minutes=new_access_token_expiration_time
     )
 
-    return Token(
-        access_token=new_access_token,
-        refresh_token=refresh_token
+    await AuthService.add_token_to_whitelist(
+        token_type=TokenType.refresh,
+        token=new_refresh_token,
+        user_id=current_user.username,
+        expires_in_minutes=new_refresh_token_expiration_time
     )
+
+    return Token(access_token=new_access_token, refresh_token=new_refresh_token)

@@ -1,8 +1,8 @@
-from sys import exc_info
+from datetime import datetime, timedelta
 
 from jose import jwt
 from passlib.context import CryptContext
-from datetime import datetime, timedelta
+
 from app.config import settings
 from app.database.redis_client import RedisClient
 from app.enums.token_type import TokenType
@@ -23,9 +23,13 @@ class AuthService:
             time_delta = settings.auth_settings.refresh_token_expire_minutes
         expire = datetime.now() + timedelta(minutes=time_delta)
         to_encode.update({"exp": expire})
+        if token_type == TokenType.access:
+            secret_key = settings.auth_settings.access_token_secret_key
+        elif token_type == TokenType.refresh:
+            secret_key = settings.auth_settings.refresh_token_secret_key
         encoded_jwt = jwt.encode(
             to_encode,
-            settings.auth_settings.access_token_secret_key,
+            secret_key,
             algorithm=settings.auth_settings.algorithm,
         )
         return encoded_jwt, time_delta
@@ -70,7 +74,7 @@ class AuthService:
                     ttl = int((expires_at - now).total_seconds())
                     await RedisClient.setex(f"blacklist:{token_type}:{username}", ttl, token)
         except Exception as e:
-            Logger.logger(f"Error adding to blacklist", exc_info=e)
+            Logger.logger.debug(f"Error adding to blacklist", exc_info=e)
 
     @classmethod
     async def invalidate_old_tokens(cls, username: str):
