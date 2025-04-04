@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Header, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.config import settings
@@ -24,13 +24,15 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    token_data = {"sub": user.username, "role": user.role.value, "ip": client_ip}
+
     access_token, access_token_expires = await AuthService.create_token(
-        data={"sub": user.username, "role": user.role.value, "ip": client_ip},
+        data=token_data,
         token_type=TokenType.access,
     )
 
     refresh_token, refresh_token_expires = await AuthService.create_token(
-        data={"sub": user.username, "role": user.role.value, "ip": client_ip},
+        data=token_data,
         token_type=TokenType.refresh,
     )
 
@@ -64,7 +66,6 @@ async def logout(
 
 @router.post("/refresh", response_model=TokenDto)
 async def refresh_token(
-    refresh_token: str = Header(..., alias="Authorization"),
     current_user: UserInDbModel = Depends(Dependencies.get_current_user),
 ):
 
