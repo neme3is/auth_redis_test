@@ -2,7 +2,6 @@ from dotenv import load_dotenv
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings
 
-
 load_dotenv(dotenv_path="../.env")
 
 
@@ -21,9 +20,12 @@ class PostgresSettings(BaseSettings):
 
 
 class AuthSettings(BaseSettings):
-    secret_key: str = "12345ABC"
+    access_token_secret_key: str = "12345ABC"
+    refresh_token_secret_key: str = "CAB54321"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 15
+    refresh_token_expire_minutes: int = 10080
+    ip_check: bool = True
 
 
 class Settings(BaseSettings):
