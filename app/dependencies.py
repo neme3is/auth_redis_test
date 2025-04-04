@@ -89,9 +89,14 @@ class Dependencies:
             client_ip=user["ip"],
         )
 
-        if settings.auth_settings.validate_ip and user_model.client_ip != request.client.host:
+        if (
+            settings.auth_settings.validate_ip
+            and user_model.client_ip != request.client.host
+        ):
             await AuthService.invalidate_old_tokens(username)
-            Logger.logger.debug(f"IP address changed for {username}. Please log in again.")
+            Logger.logger.debug(
+                f"IP address changed for {username}. Please log in again."
+            )
             raise IpSecurityException()
 
         return user_model

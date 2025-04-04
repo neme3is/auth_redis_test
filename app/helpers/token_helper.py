@@ -1,7 +1,11 @@
 from jose import JWTError, jwt
 
 from app.config import settings
-from app.exceptions.api_exceptions import TokenProcessingException, BadRequestException, InternalServerErrorException
+from app.exceptions.api_exceptions import (
+    TokenProcessingException,
+    BadRequestException,
+    InternalServerErrorException,
+)
 from app.logger import Logger
 
 
@@ -37,7 +41,9 @@ class TokenHelper:
 
             except JWTError as e:
                 Logger.logger.debug(f"Error decoding refresh token: {str(e)}")
-                raise InternalServerErrorException(detail=f"Token processing failed", exception=e)
+                raise InternalServerErrorException(
+                    detail=f"Token processing failed", exception=e
+                )
 
         except Exception as e:
             Logger.logger.debug("Exception while verifying token", exc_info=e)

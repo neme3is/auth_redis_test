@@ -13,7 +13,12 @@ class IpSecurityException(HTTPException):
 
 
 class TokenProcessingException(HTTPException):
-    def __init__(self, detail: str = "Token processing failed.", exception: Exception = None, *args):
+    def __init__(
+        self,
+        detail: str = "Token processing failed.",
+        exception: Exception = None,
+        *args,
+    ):
         if exception:
             detail = f"{detail}: {str(exception)}"
         super().__init__(status_code=500, detail=detail, *args)
@@ -25,7 +30,21 @@ class BadRequestException(HTTPException):
 
 
 class InternalServerErrorException(HTTPException):
-    def __init__(self, detail: str = "An internal server error occurred.", exception: Exception = None, *args):
+    def __init__(
+        self,
+        detail: str = "An internal server error occurred.",
+        exception: Exception = None,
+        *args,
+    ):
         if exception:
             detail = f"{detail}: {str(exception)}"
-        super().__init__(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=detail, *args)
+        super().__init__(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=detail, *args
+        )
+
+
+class ForbiddenException(HTTPException):
+    def __init__(self, detail: str = "Forbidden!", exception: Exception = None, *args):
+        if exception:
+            detail = f"{detail}: {str(exception)}"
+        super().__init__(status_code=status.HTTP_403_FORBIDDEN, detail=detail, *args)

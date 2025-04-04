@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Request
 
 from app.dependencies import Dependencies
 from app.enums.roles import Role
+from app.exceptions.api_exceptions import ForbiddenException
 from app.schemas.schemas import MessageDto
 from models.models import UserInDbModel
 
@@ -19,9 +20,7 @@ async def admin_only_protected_source(
     current_user: UserInDbModel = Depends(Dependencies.get_current_user),
 ):
     if current_user.role != Role.ADMIN.value:
-        raise HTTPException(
-            status_code=403, detail="Not enough rights to access admin source"
-        )
+        raise ForbiddenException(detail="Not enough rights to access admin source")
 
     return MessageDto(success=True, msg="Got access to admin source")
 
@@ -35,9 +34,7 @@ async def admin_only_protected_source(
     current_user: UserInDbModel = Depends(Dependencies.get_current_user),
 ):
     if current_user.role not in Role.list():
-        raise HTTPException(
-            status_code=403, detail="Not enough rights to access user source"
-        )
+        raise ForbiddenException(detail="Not enough rights to access users source")
 
     return MessageDto(success=True, msg="Got access to user source")
 
