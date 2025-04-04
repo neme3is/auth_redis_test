@@ -25,7 +25,7 @@ class AuthSettings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 15
     refresh_token_expire_minutes: int = 10080
-    ip_check: bool = True
+    validate_ip: bool = True
 
 
 class Settings(BaseSettings):

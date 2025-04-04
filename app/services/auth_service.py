@@ -8,27 +8,27 @@ from app.database.redis_client import RedisClient
 from app.enums.token_type import TokenType
 from app.helpers.token_helper import TokenHelper
 from app.logger import Logger
-from models.models import UserInDbModel
+from models.models import UserInDbModel, TokenModel
 
 
 class AuthService:
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     @classmethod
-    async def create_token(cls, data: dict, token_type: TokenType):
-        to_encode = data.copy()
+    async def create_token(cls, data: TokenModel, token_type: TokenType):
+        to_encode = data.model_copy()
         if token_type == TokenType.access:
             time_delta = settings.auth_settings.access_token_expire_minutes
         if token_type == TokenType.refresh:
             time_delta = settings.auth_settings.refresh_token_expire_minutes
         expire = datetime.now() + timedelta(minutes=time_delta)
-        to_encode.update({"exp": expire})
+        to_encode.exp = expire
         if token_type == TokenType.access:
             secret_key = settings.auth_settings.access_token_secret_key
         elif token_type == TokenType.refresh:
             secret_key = settings.auth_settings.refresh_token_secret_key
         encoded_jwt = jwt.encode(
-            to_encode,
+            to_encode.model_dump(),
             secret_key,
             algorithm=settings.auth_settings.algorithm,
         )
@@ -110,7 +110,7 @@ class AuthService:
             client_ip=client_ip,
         )
 
-        if not cls.verify_password(password, user_model.hashed_password):
+        if not await cls.verify_password(password, user_model.hashed_password):
             return None
 
         return user_model

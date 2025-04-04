@@ -2,11 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.config import settings
+from app.database.redis_client import RedisClient
 from app.dependencies import Dependencies
 from app.enums.token_type import TokenType
 from app.schemas.schemas import MessageDto, TokenDto
 from app.services.auth_service import AuthService
-from models.models import UserInDbModel
+from models.models import UserInDbModel, TokenModel
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -24,7 +25,9 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    token_data = {"sub": user.username, "role": user.role.value, "ip": client_ip}
+    await RedisClient.hset(f"user:{user.username}", mapping={"ip": request.client.host})
+
+    token_data = TokenModel(sub=user.username, role=user.role)
 
     access_token, access_token_expires = await AuthService.create_token(
         data=token_data,
@@ -71,8 +74,10 @@ async def refresh_token(
 
     await AuthService.invalidate_old_tokens(current_user.username)
 
+    token_data = TokenModel(sub=current_user.username, role=current_user.role)
+
     new_access_token, new_access_token_expiration_time = await AuthService.create_token(
-        data={"sub": current_user.username, "role": current_user.role},
+        token_data,
         token_type=TokenType.access,
     )
 
@@ -85,7 +90,7 @@ async def refresh_token(
 
     new_refresh_token, new_refresh_token_expiration_time = (
         await AuthService.create_token(
-            data={"sub": current_user.username, "role": current_user.role},
+            token_data,
             token_type=TokenType.refresh,
         )
     )
