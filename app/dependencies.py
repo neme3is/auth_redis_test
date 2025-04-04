@@ -5,7 +5,7 @@ from jose.exceptions import JWTError
 from app.config import settings
 from app.database.redis_client import RedisClient
 from app.enums.token_type import TokenType
-from app.exceptions.api_exceptions import Exceptions
+from app.exceptions.api_exceptions import CredentialsException, IpSecurityException
 from app.logger import Logger
 from app.services.auth_service import AuthService
 from models.models import UserInDbModel
@@ -29,20 +29,20 @@ class Dependencies:
             username: str = payload.get("sub")
             if username is None:
                 Logger.logger.debug(f"Username is None.")
-                raise Exceptions.credentials_exception
+                raise CredentialsException()
 
             if await AuthService.is_token_blacklisted(
                 username, TokenType.access, token
             ):
                 Logger.logger.debug(f"Token: {token} is blacklisted!")
-                raise Exceptions.credentials_exception
+                raise CredentialsException()
             if not await AuthService.is_token_whitelisted(
                 username, TokenType.access, token
             ):
                 Logger.logger.debug(
                     f"User {username} with token {token} in whitelist not found!"
                 )
-                raise Exceptions.credentials_exception
+                raise CredentialsException()
 
         except JWTError as e:
             Logger.logger.debug(f"Error with access token: {str(e)}")
@@ -57,29 +57,29 @@ class Dependencies:
                 username: str = payload.get("sub")
                 if username is None:
                     Logger.logger.debug(f"Username is None.")
-                    raise Exceptions.credentials_exception
+                    raise CredentialsException()
 
                 if await AuthService.is_token_blacklisted(
                     username, TokenType.refresh, token
                 ):
                     Logger.logger.debug(f"Token: {token} is blacklisted!")
-                    raise Exceptions.credentials_exception
+                    raise CredentialsException()
                 if not await AuthService.is_token_whitelisted(
                     username, TokenType.refresh, token
                 ):
                     Logger.logger.debug(
                         f"User {username} with token {token} in whitelist not found!"
                     )
-                    raise Exceptions.credentials_exception
+                    raise CredentialsException()
 
             except JWTError as e:
                 Logger.logger.debug(f"Error with refresh token: {str(e)}")
-                raise Exceptions.credentials_exception
+                raise CredentialsException()
 
         user = await RedisClient.hgetall(f"user:{username}")
 
         if user is None:
-            raise Exceptions.credentials_exception
+            raise CredentialsException()
 
         user_model = UserInDbModel(
             username=user["username"],
@@ -92,6 +92,6 @@ class Dependencies:
         if settings.auth_settings.validate_ip and user_model.client_ip != request.client.host:
             await AuthService.invalidate_old_tokens(username)
             Logger.logger.debug(f"IP address changed for {username}. Please log in again.")
-            raise Exceptions.ip_security_exception
+            raise IpSecurityException()
 
         return user_model

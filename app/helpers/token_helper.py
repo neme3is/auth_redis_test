@@ -1,8 +1,7 @@
-from fastapi import HTTPException
 from jose import JWTError, jwt
-from starlette import status
 
 from app.config import settings
+from app.exceptions.api_exceptions import TokenProcessingException, BadRequestException, InternalServerErrorException
 from app.logger import Logger
 
 
@@ -19,10 +18,7 @@ class TokenHelper:
 
             if "exp" not in payload:
                 Logger.logger.debug("Token missing expiration claim")
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Token missing expiration claim",
-                )
+                raise BadRequestException(detail="Token missing expiration claim")
             return payload.get("exp")
 
         except JWTError as e:
@@ -36,22 +32,13 @@ class TokenHelper:
 
                 if "exp" not in payload:
                     Logger.logger.debug("Token missing expiration claim")
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail="Token missing expiration claim",
-                    )
+                    raise BadRequestException(detail="Token missing expiration claim")
                 return payload.get("exp")
 
             except JWTError as e:
                 Logger.logger.debug(f"Error decoding refresh token: {str(e)}")
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail=f"Token processing failed: {str(e)}",
-                )
+                raise InternalServerErrorException(detail=f"Token processing failed", exception=e)
 
         except Exception as e:
             Logger.logger.debug("Exception while verifying token", exc_info=e)
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Token processing failed: {str(e)}",
-            )
+            raise TokenProcessingException(exception=e)
