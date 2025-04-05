@@ -14,7 +14,7 @@ class ResponseDto(BaseModel):
     msg: str
 
 
-class CreateUserMessageDto(BaseModel):
+class CreateUserResponseDto(BaseModel):
     success: bool
     username: str
 
@@ -23,7 +23,7 @@ class ErrorResponseDto(BaseModel):
     detail: str
 
 
-class CreateUserDto(BaseModel):
+class CreateUserRequestDto(BaseModel):
     username: str
     password: str
     role: Role
