@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Request
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.config import settings
@@ -8,7 +8,7 @@ from app.enums.token_type import TokenType
 from app.exceptions.api_exceptions import CredentialsException
 from app.schemas.schemas import ResponseDto, TokenDto
 from app.services.auth_service import AuthService
-from models.models import UserInDbModel, TokenModel
+from app.models.models import UserInDbModel, TokenModel
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

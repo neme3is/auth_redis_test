@@ -9,7 +9,7 @@ from app.database.redis_client import RedisClient
 from app.enums.token_type import TokenType
 from app.helpers.token_helper import TokenHelper
 from app.logger import Logger
-from models.models import UserInDbModel, TokenModel
+from app.models.models import UserInDbModel, TokenModel
 
 
 class AuthService:

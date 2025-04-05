@@ -8,7 +8,7 @@ from app.enums.token_type import TokenType
 from app.exceptions.api_exceptions import CredentialsException, IpSecurityException
 from app.logger import Logger
 from app.services.auth_service import AuthService
-from models.models import UserInDbModel
+from app.models.models import UserInDbModel
 
 
 class Dependencies:

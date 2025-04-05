@@ -4,7 +4,7 @@ from app.dependencies import Dependencies
 from app.enums.roles import Role
 from app.exceptions.api_exceptions import ForbiddenException
 from app.schemas.schemas import ResponseDto
-from models.models import UserInDbModel
+from app.models.models import UserInDbModel
 
 router = APIRouter(prefix="/protected", tags=["protected"])
 
