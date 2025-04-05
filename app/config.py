@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     redis_settings: RedisSettings = RedisSettings()
     auth_settings: AuthSettings = AuthSettings()
     postgres_settings: PostgresSettings = PostgresSettings()
+    log_level: str = 'DEBUG'
 
 
 settings = Settings()

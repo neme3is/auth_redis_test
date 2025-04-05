@@ -1,4 +1,5 @@
 import logging
+from app.config import settings
 
 
 class Logger:
@@ -7,10 +8,10 @@ class Logger:
     @classmethod
     def get_logger(cls):
         if cls.logger is None:
+            log_level = settings.log_level.upper()
             logging.basicConfig(
-                level=logging.INFO, format="[%(asctime)s] [%(levelname)s] %(message)s"
-            )
-            logging.basicConfig(
-                level=logging.DEBUG, format="[%(asctime)s] [%(levelname)s] %(message)s"
+                level=getattr(logging, log_level),
+                format="[%(asctime)s] [%(levelname)s] %(message)s"
             )
             cls.logger = logging.getLogger(__name__)
+        return cls.logger
