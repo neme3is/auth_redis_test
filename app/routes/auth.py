@@ -25,7 +25,7 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
             headers={"WWW-Authenticate": "Bearer"}
         )
 
-    await RedisClient.hset(f"user:{user.username}", mapping={"ip": request.client.host})
+    await RedisClient.hmset(f"user:{user.username}", mapping={"ip": request.client.host})
 
     token_data = TokenModel(sub=user.username, role=user.role)
 

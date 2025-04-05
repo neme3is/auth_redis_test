@@ -12,7 +12,7 @@ from app.logger import Logger
 class TokenHelper:
 
     @classmethod
-    def get_token_expiration(cls, token: str) -> float | None:
+    def get_token_expiration(cls, token: str) -> float:
         try:
             payload = jwt.decode(
                 token,
@@ -25,8 +25,8 @@ class TokenHelper:
                 raise BadRequestException(detail="Token missing expiration claim")
             return payload.get("exp")
 
-        except JWTError as e:
-            Logger.logger.debug("Error decoding access token: {str(e)}")
+        except JWTError:
+            Logger.logger.debug("Error decoding access token. Trying to decode refresh token.")
             try:
                 payload = jwt.decode(
                     token,
@@ -40,11 +40,11 @@ class TokenHelper:
                 return payload.get("exp")
 
             except JWTError as e:
-                Logger.logger.debug(f"Error decoding refresh token: {str(e)}")
+                Logger.logger.debug(f"Error decoding refresh token", exc_info=True)
                 raise InternalServerErrorException(
                     detail="Token processing failed", exception=e
                 )
 
         except Exception as e:
-            Logger.logger.debug("Exception while verifying token", exc_info=e)
+            Logger.logger.debug("Exception while verifying token",  exc_info=True)
             raise TokenProcessingException(exception=e)

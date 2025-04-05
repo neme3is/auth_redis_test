@@ -5,6 +5,10 @@ from pydantic_settings import BaseSettings
 load_dotenv(dotenv_path="../.env")
 
 
+class ApplicationSettings(BaseSettings):
+    app_host: str = '0.0.0.0'
+    app_port: int = 8000
+
 class RedisSettings(BaseSettings):
     redis_host: str = "127.0.0.1"
     redis_port: int = 6379
@@ -32,6 +36,7 @@ class Settings(BaseSettings):
     redis_settings: RedisSettings = RedisSettings()
     auth_settings: AuthSettings = AuthSettings()
     postgres_settings: PostgresSettings = PostgresSettings()
+    app_settings: ApplicationSettings = ApplicationSettings()
     log_level: str = 'DEBUG'
 
 

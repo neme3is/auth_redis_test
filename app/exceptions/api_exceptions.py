@@ -8,7 +8,7 @@ class CredentialsException(HTTPException):
 
 
 class IpSecurityException(HTTPException):
-    def __init__(self, detail: str = "IP validation failed.", **kwargs):
+    def __init__(self, detail: str = "Ip address validation failed. Please log in again.", **kwargs):
         super().__init__(status_code=status.HTTP_403_FORBIDDEN, detail=detail, **kwargs)
 
 

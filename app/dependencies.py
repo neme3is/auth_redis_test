@@ -34,15 +34,15 @@ class Dependencies:
             if await AuthService.is_token_blacklisted(
                 username, TokenType.ACCESS, token
             ):
-                Logger.logger.debug(f"Token: {token} is blacklisted!")
-                raise CredentialsException()
+                msg = f"Token: {token} is blacklisted!"
+                Logger.logger.debug(msg)
+                raise CredentialsException(detail=msg)
             if not await AuthService.is_token_whitelisted(
                 username, TokenType.ACCESS, token
             ):
-                Logger.logger.debug(
-                    f"User {username} with token {token} in whitelist not found!"
-                )
-                raise CredentialsException()
+                msg = f"User {username} with token {token} in whitelist not found!"
+                Logger.logger.debug(msg)
+                raise CredentialsException(detail=msg)
 
         except JWTError as e:
             Logger.logger.debug(f"Error with access token: {str(e)}")
@@ -62,19 +62,20 @@ class Dependencies:
                 if await AuthService.is_token_blacklisted(
                     username, TokenType.REFRESH, token
                 ):
-                    Logger.logger.debug(f"Token: {token} is blacklisted!")
-                    raise CredentialsException()
+                    msg = f"Token: {token} is blacklisted!"
+                    Logger.logger.debug(msg)
+                    raise CredentialsException(detail=msg)
                 if not await AuthService.is_token_whitelisted(
                     username, TokenType.REFRESH, token
                 ):
-                    Logger.logger.debug(
-                        f"User {username} with token {token} in whitelist not found!"
-                    )
-                    raise CredentialsException()
+                    msg = f"User {username} with token {token} in whitelist not found!"
+                    Logger.logger.debug(msg, exc_info=True)
+                    raise CredentialsException(detail=msg)
 
-            except JWTError as e:
-                Logger.logger.debug(f"Error with refresh token: {str(e)}")
-                raise CredentialsException()
+            except JWTError:
+                msg = f"Error with refresh token."
+                Logger.logger.debug(msg, exc_info=True)
+                raise CredentialsException(detail=msg)
 
         user = await RedisClient.hgetall(f"user:{username}")
 
@@ -95,7 +96,7 @@ class Dependencies:
         ):
             await AuthService.invalidate_old_tokens(username)
             Logger.logger.debug(
-                f"IP address changed for {username}. Please log in again."
+                f"IP address changed for {username}."
             )
             raise IpSecurityException()
 

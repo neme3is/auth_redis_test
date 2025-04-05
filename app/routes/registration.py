@@ -16,7 +16,7 @@ async def create_user(request: Request, user: CreateUserRequestDto):
 
     if await RedisClient.exists(user_key):
         raise BadRequestException(
-            detail=f"Пользователь '{user.username}' уже существует."
+            detail=f"User '{user.username}' already exists."
         )
 
     user_data = {
@@ -27,6 +27,6 @@ async def create_user(request: Request, user: CreateUserRequestDto):
         "ip": client_ip,
     }
 
-    await RedisClient.hset(user_key, mapping=user_data)
+    await RedisClient.hmset(user_key, mapping=user_data)
 
     return CreateUserResponseDto(success=True, username=user.username)

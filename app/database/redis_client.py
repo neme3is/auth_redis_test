@@ -43,9 +43,9 @@ class RedisClient:
         return await redis_client.setex(key, expires_in, token)
 
     @classmethod
-    async def hset(cls, key: str, mapping: dict):
+    async def hmset(cls, key: str, mapping: dict):
         redis_client = await cls.get_instance()
-        return await redis_client.hset(key, mapping=mapping)
+        return await redis_client.hmset(key, mapping)
 
     @classmethod
     async def hget(cls, key: str, field: str):
