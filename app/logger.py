@@ -13,5 +13,5 @@ class Logger:
                 level=getattr(logging, log_level),
                 format="[%(asctime)s] [%(levelname)s] %(message)s"
             )
-            cls.logger = logging.getLogger(__name__)
+            cls.logger = logging.getLogger()
         return cls.logger
