@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+from app.enums.roles import Role
+
 
 class TokenDto(BaseModel):
     access_token: str
@@ -7,7 +9,7 @@ class TokenDto(BaseModel):
     refresh_token: str
 
 
-class MessageDto(BaseModel):
+class ResponseDto(BaseModel):
     success: bool
     msg: str
 
@@ -24,5 +26,5 @@ class ErrorResponseDto(BaseModel):
 class CreateUserDto(BaseModel):
     username: str
     password: str
-    role: str
+    role: Role
     email: str = None

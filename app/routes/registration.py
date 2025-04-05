@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Request
 
 from app.database.redis_client import RedisClient
+from app.exceptions.api_exceptions import BadRequestException
 from app.schemas.schemas import CreateUserDto, CreateUserMessageDto
 from app.services.auth_service import AuthService
-from models.models import UserInDbModel
 
 router = APIRouter(tags=["create-user"])
 
@@ -13,6 +13,11 @@ router = APIRouter(tags=["create-user"])
 async def create_user(request: Request, user: CreateUserDto):
     client_ip = request.client.host
     user_key = f"user:{user.username}"
+
+    if await RedisClient.exists(user_key):
+        raise BadRequestException(
+            detail=f"Пользователь '{user.username}' уже существует."
+        )
 
     user_data = {
         "username": user.username,

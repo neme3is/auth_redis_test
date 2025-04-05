@@ -4,12 +4,12 @@ from starlette import status
 
 class CredentialsException(HTTPException):
     def __init__(self, detail: str = "Could not validate credentials.", *args):
-        super().__init__(status_code=401, detail=detail, *args)
+        super().__init__(status_code=status.HTTP_401_UNAUTHORIZED, detail=detail, *args)
 
 
 class IpSecurityException(HTTPException):
     def __init__(self, detail: str = "IP validation failed.", *args):
-        super().__init__(status_code=403, detail=detail, *args)
+        super().__init__(status_code=status.HTTP_403_FORBIDDEN, detail=detail, *args)
 
 
 class TokenProcessingException(HTTPException):
@@ -21,7 +21,7 @@ class TokenProcessingException(HTTPException):
     ):
         if exception:
             detail = f"{detail}: {str(exception)}"
-        super().__init__(status_code=500, detail=detail, *args)
+        super().__init__(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=detail, *args)
 
 
 class BadRequestException(HTTPException):

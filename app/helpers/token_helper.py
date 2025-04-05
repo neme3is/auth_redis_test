@@ -26,7 +26,7 @@ class TokenHelper:
             return payload.get("exp")
 
         except JWTError as e:
-            Logger.logger.debug(f"Error decoding access token: {str(e)}")
+            Logger.logger.debug("Error decoding access token: {str(e)}")
             try:
                 payload = jwt.decode(
                     token,
@@ -42,7 +42,7 @@ class TokenHelper:
             except JWTError as e:
                 Logger.logger.debug(f"Error decoding refresh token: {str(e)}")
                 raise InternalServerErrorException(
-                    detail=f"Token processing failed", exception=e
+                    detail="Token processing failed", exception=e
                 )
 
         except Exception as e:

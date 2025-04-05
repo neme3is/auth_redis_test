@@ -32,12 +32,12 @@ class Dependencies:
                 raise CredentialsException()
 
             if await AuthService.is_token_blacklisted(
-                username, TokenType.access, token
+                username, TokenType.ACCESS, token
             ):
                 Logger.logger.debug(f"Token: {token} is blacklisted!")
                 raise CredentialsException()
             if not await AuthService.is_token_whitelisted(
-                username, TokenType.access, token
+                username, TokenType.ACCESS, token
             ):
                 Logger.logger.debug(
                     f"User {username} with token {token} in whitelist not found!"
@@ -60,12 +60,12 @@ class Dependencies:
                     raise CredentialsException()
 
                 if await AuthService.is_token_blacklisted(
-                    username, TokenType.refresh, token
+                    username, TokenType.REFRESH, token
                 ):
                     Logger.logger.debug(f"Token: {token} is blacklisted!")
                     raise CredentialsException()
                 if not await AuthService.is_token_whitelisted(
-                    username, TokenType.refresh, token
+                    username, TokenType.REFRESH, token
                 ):
                     Logger.logger.debug(
                         f"User {username} with token {token} in whitelist not found!"

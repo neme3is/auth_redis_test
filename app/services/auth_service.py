@@ -17,15 +17,15 @@ class AuthService:
     @classmethod
     async def create_token(cls, data: TokenModel, token_type: TokenType):
         to_encode = data.model_copy()
-        if token_type == TokenType.access:
+        if token_type == TokenType.ACCESS:
             time_delta = settings.auth_settings.access_token_expire_minutes
-        if token_type == TokenType.refresh:
+        if token_type == TokenType.REFRESH:
             time_delta = settings.auth_settings.refresh_token_expire_minutes
         expire = datetime.now() + timedelta(minutes=time_delta)
         to_encode.exp = expire
-        if token_type == TokenType.access:
+        if token_type == TokenType.ACCESS:
             secret_key = settings.auth_settings.access_token_secret_key
-        elif token_type == TokenType.refresh:
+        elif token_type == TokenType.REFRESH:
             secret_key = settings.auth_settings.refresh_token_secret_key
         encoded_jwt = jwt.encode(
             to_encode.model_dump(),

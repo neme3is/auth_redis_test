@@ -2,8 +2,6 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
-
-from app.database.postgres_factory import SqlSessionManager
 from app.logger import Logger
 from app.routes.auth import router as auth_router
 from app.routes.protected_sources import router as protected_router
@@ -20,7 +18,7 @@ async def lifespan(app: FastAPI):
     yield
 
     # await SqlSessionManager.close()
-    Logger.logger.info("❌ Database connection closed")
+    # Logger.logger.info("❌ Database connection closed")
 
 
 app = FastAPI(lifespan=lifespan)

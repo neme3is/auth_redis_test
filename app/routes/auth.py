@@ -5,7 +5,7 @@ from app.config import settings
 from app.database.redis_client import RedisClient
 from app.dependencies import Dependencies
 from app.enums.token_type import TokenType
-from app.schemas.schemas import MessageDto, TokenDto
+from app.schemas.schemas import ResponseDto, TokenDto
 from app.services.auth_service import AuthService
 from models.models import UserInDbModel, TokenModel
 
@@ -31,23 +31,23 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
 
     access_token, access_token_expires = await AuthService.create_token(
         data=token_data,
-        token_type=TokenType.access,
+        token_type=TokenType.ACCESS,
     )
 
     refresh_token, refresh_token_expires = await AuthService.create_token(
         data=token_data,
-        token_type=TokenType.refresh,
+        token_type=TokenType.REFRESH,
     )
 
     await AuthService.add_token_to_whitelist(
-        token_type=TokenType.access,
+        token_type=TokenType.ACCESS,
         token=access_token,
         user_id=user.username,
         expires_in_minutes=access_token_expires,
     )
 
     await AuthService.add_token_to_whitelist(
-        token_type=TokenType.refresh,
+        token_type=TokenType.REFRESH,
         token=refresh_token,
         user_id=user.username,
         expires_in_minutes=refresh_token_expires,
@@ -56,7 +56,7 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
     return TokenDto(access_token=access_token, refresh_token=refresh_token)
 
 
-@router.post("/logout", response_model=MessageDto)
+@router.post("/logout", response_model=ResponseDto)
 async def logout(
     request: Request,
     current_user: UserInDbModel = Depends(Dependencies.get_current_user),
@@ -64,7 +64,7 @@ async def logout(
 
     await AuthService.invalidate_old_tokens(current_user.username)
 
-    return MessageDto(success=True, msg=f"Successfully logged out")
+    return ResponseDto(success=True, msg=f"Successfully logged out")
 
 
 @router.post("/refresh", response_model=TokenDto)
@@ -78,11 +78,11 @@ async def refresh_token(
 
     new_access_token, new_access_token_expiration_time = await AuthService.create_token(
         token_data,
-        token_type=TokenType.access,
+        token_type=TokenType.ACCESS,
     )
 
     await AuthService.add_token_to_whitelist(
-        TokenType.access,
+        TokenType.ACCESS,
         new_access_token,
         current_user.username,
         settings.auth_settings.access_token_expire_minutes,
@@ -91,19 +91,19 @@ async def refresh_token(
     new_refresh_token, new_refresh_token_expiration_time = (
         await AuthService.create_token(
             token_data,
-            token_type=TokenType.refresh,
+            token_type=TokenType.REFRESH,
         )
     )
 
     await AuthService.add_token_to_whitelist(
-        token_type=TokenType.access,
+        token_type=TokenType.ACCESS,
         token=new_access_token,
         user_id=current_user.username,
         expires_in_minutes=new_access_token_expiration_time,
     )
 
     await AuthService.add_token_to_whitelist(
-        token_type=TokenType.refresh,
+        token_type=TokenType.REFRESH,
         token=new_refresh_token,
         user_id=current_user.username,
         expires_in_minutes=new_refresh_token_expiration_time,

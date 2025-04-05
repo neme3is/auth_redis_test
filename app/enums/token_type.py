@@ -2,9 +2,9 @@ from enum import StrEnum
 
 
 class TokenType(StrEnum):
-    access = "access"
-    refresh = "refresh"
+    ACCESS = "access"
+    REFRESH = "refresh"
 
     @classmethod
     def list(cls):
-        return [role.value for role in cls]
+        return [token.value for token in cls]
