@@ -5,6 +5,7 @@ from app.config import settings
 from app.database.redis_client import RedisClient
 from app.dependencies import Dependencies
 from app.enums.token_type import TokenType
+from app.exceptions.api_exceptions import CredentialsException
 from app.schemas.schemas import ResponseDto, TokenDto
 from app.services.auth_service import AuthService
 from models.models import UserInDbModel, TokenModel
@@ -19,10 +20,9 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
         form_data.username, form_data.password, client_ip
     )
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
+        raise CredentialsException(
+            "Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"}
         )
 
     await RedisClient.hset(f"user:{user.username}", mapping={"ip": request.client.host})
